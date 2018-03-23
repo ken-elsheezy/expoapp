@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View , ScrollView, TouchableHighlight, Image, FlatList} from 'react-native';
+import { StyleSheet, Text, View , ScrollView, TextInput,
+          TouchableHighlight, Image, FlatList, ActivityIndicator, Alert, DrawerLayoutAndroid} from 'react-native';
 
 export default class App extends React.Component {
 
@@ -12,13 +13,14 @@ export default class App extends React.Component {
   }
 
   componentDidMount(){
-    return fetch('https://facebook.github.io/react-native/movies.json')
+    return fetch('https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=1013bb0b1d32487d8a57012b2e62bbf3')
       .then((response) => response.json())
       .then((responseJson) => {
 
         this.setState({
           isLoading: false,
-          data: responseJson.movies,
+          data: responseJson.articles,
+          search: ""
         }, function(){
 
         });
@@ -29,32 +31,71 @@ export default class App extends React.Component {
       });
   }
 
+  kenOnPressButton(text) {
+   Alert.alert(text)
+ }
+
   render() {
+
+    var navigationView = (
+    <View style={{flex: 1, backgroundColor: '#fff'}}>
+      <Text style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Im in the Drawer!</Text>
+    </View>
+  );
+
+    if(this.state.isLoading){
+     return(
+       <View style={{flex: 1, padding: 20}}>
+         <ActivityIndicator/>
+       </View>
+     )
+   }
+
+
     return (
+
+
+      <DrawerLayoutAndroid
+            drawerWidth={300}
+            drawerPosition={DrawerLayoutAndroid.positions.Left}
+            renderNavigationView={() => navigationView}>
 
           <ScrollView>
 
             <View style={styles.iterator}>
-                <Image source={require('./assets/invent.jpg')} />
-                <Text>This is nested in the view Container</Text>
+                <Image style={{height:70, width:200}} source={{uri:'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_120x44dp.png'}} />
+                <Text style={{color:"#fff"}}>This is a news App! Cool google logo upstairs</Text>
             </View>
 
-             <View style={styles.blue}>
-               <FlatList
-                 data={this.state.data}
-                 renderItem={({item}) => <Text>{item.title}, {item.releaseYear}</Text>}
-                 keyExtractor={(item, index) => index}/>
+
+            <View style={{flex: 1,padding:10, paddingTop: 10, backgroundColor:"#006"}}>
+              <TextInput
+              placeholder="Search..."
+              style={{flex: 1, padding: 2, backgroundColor:"#fff", height:40, fontSize:20, borderBottomWidth:0}}
+              onSubmitEditing={(text) => this.setState({text})} />
+              <Text>{this.state.search}</Text>
+            </View>
+
+            <View style={{flex: 1, padding: 20}}>
+              <ActivityIndicator/>
             </View>
 
             {this.state.data.map((item,i)=>
-              <View style={styles.red} key={i}>
-                      <Image source={require('./assets/invent.jpg')} />
-                      <Text>{item.title}, {item.releaseYear}</Text>
-              </View>
+              <TouchableHighlight onPress={()=> { Alert.alert(item.source.name+ ": " + item.description)}} key={i}>
+                <View style={styles.red} >
+                  <View style={styles.fiftyfifty}>
+                      <Image style={styles.images} source={{uri:item.urlToImage}} />
+                  </View>
+                  <View style={styles.fiftyfiftyone}>
+                          <Text>{item.source.name}{item.description}</Text>
+                  </View>
+                </View>
+              </TouchableHighlight>
             )}
 
 
           </ScrollView>
+          </DrawerLayoutAndroid>
     );
   }
 }
@@ -67,15 +108,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  fiftyfifty: {
+    flex: 0.4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    position: 'relative'
+  },
+
+  fiftyfiftyone: {
+    flex: 0.6,
+    backgroundColor: '#F5FCFF',
+    alignItems: 'center',
+    paddingLeft:10
+  },
+
   iterator: {
     flex: 1,
+    paddingTop: 100,
     backgroundColor: '#006',
     alignItems: 'center'
   },
 
   red: {
     flex: 1,
-    backgroundColor: '#c00',
+    flexDirection: 'row',
+    backgroundColor: '#F5FCFF',
     alignItems: 'center',
     marginBottom: 20
   },
@@ -93,4 +151,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 100
   },
+
+  images: {
+    width:100,
+    height: 100
+  },
+
 });
